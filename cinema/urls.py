@@ -13,5 +13,6 @@ urlpatterns = [
     path('history/', views.watch_history, name='watch_history'),
     path('toggle-favorite/<int:film_id>/', views.toggle_favorite, name='toggle_favorite'),
     path('review/<int:film_id>/', views.add_review, name='add_review'),
-    path('genre/<int:genre_id>/', views.genre_films, name='genre_films'),
+    path('category/<str:category>/', views.category_view, name='category'),
+    path('novelties/', views.novelties, name='novelties'),
 ]

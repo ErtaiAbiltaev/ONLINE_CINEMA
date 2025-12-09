@@ -31,7 +31,7 @@
     <section class="mb-12 sm:mb-16 lg:mb-20">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 sm:mb-8 section-title flex items-center gap-2">
             <i class="fas fa-fire text-red-500 text-2xl sm:text-3xl"></i>
-            <span>Тренды</span>
+            <span>Тренды на неделе</span>
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6">
             {% for film in trending %}
@@ -58,7 +58,7 @@
     <section class="mb-12 sm:mb-16 lg:mb-20">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 sm:mb-8 section-title flex items-center gap-2">
             <i class="fas fa-star text-yellow-400 text-2xl sm:text-3xl"></i>
-            <span>Популярное</span>
+            <span>Популярные фильмы</span>
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6">
             {% for film in popular %}
@@ -83,10 +83,35 @@
     <section class="mb-12 sm:mb-16 lg:mb-20">
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 sm:mb-8 section-title flex items-center gap-2">
             <i class="fas fa-crown text-purple-400 text-2xl sm:text-3xl"></i>
-            <span>Топ рейтинги</span>
+            <span>Лучшие фильмы</span>
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6">
             {% for film in top_rated %}
+            <a href="{% url 'film_detail' film.id %}" class="group">
+                <div class="film-card">
+                    <img src="https://image.tmdb.org/t/p/w300{{ film.poster_path }}" 
+                         alt="{{ film.title }}" class="w-full h-56 sm:h-72 lg:h-80 object-cover">
+                    <div class="absolute bottom-0 w-full bg-gradient-to-t from-black p-2 sm:p-4">
+                        <h3 class="font-bold text-xs sm:text-sm line-clamp-1 mb-1">{{ film.title }}</h3>
+                        <div class="flex justify-between text-xs">
+                            <p class="text-yellow-400">⭐ {{ film.vote_average|floatformat:1 }}</p>
+                            <p class="text-gray-300">{{ film.release_date|date:'Y'|default:'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Upcoming Section -->
+    <section class="mb-12 sm:mb-16 lg:mb-20">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 sm:mb-8 section-title flex items-center gap-2">
+            <i class="fas fa-calendar text-blue-400 text-2xl sm:text-3xl"></i>
+            <span>Скоро в кинотеатре</span>
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6">
+            {% for film in upcoming %}
             <a href="{% url 'film_detail' film.id %}" class="group">
                 <div class="film-card">
                     <img src="https://image.tmdb.org/t/p/w300{{ film.poster_path }}" 

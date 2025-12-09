@@ -1,0 +1,32 @@
+{% extends 'cinema/base.html' %}
+
+{% block title %}{{ genre_name }} - WESTLINE{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-3 sm:px-4 py-8">
+    <h1 class="text-4xl sm:text-5xl font-black mb-2 section-title">{{ genre_name }}</h1>
+    <p class="text-gray-400 mb-8">Найдено фильмов: <span class="text-purple-400 font-bold">{{ films|length }}</span></p>
+
+    {% if films %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6 mb-12">
+        {% for film in films %}
+        <a href="{% url 'film_detail' film.id %}" class="group">
+            <div class="film-card">
+                <img src="https://image.tmdb.org/t/p/w300{{ film.poster_path }}" 
+                     alt="{{ film.title }}" class="w-full h-56 sm:h-72 lg:h-80 object-cover">
+                <div class="absolute bottom-0 w-full bg-gradient-to-t from-black p-2 sm:p-4">
+                    <h3 class="font-bold text-xs sm:text-sm line-clamp-2">{{ film.title }}</h3>
+                    <p class="text-xs text-yellow-400">⭐ {{ film.vote_average|floatformat:1 }}</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <i class="fas fa-film text-6xl text-gray-600 mb-4"></i>
+        <p class="text-2xl text-gray-400">Фильмы не найдены</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

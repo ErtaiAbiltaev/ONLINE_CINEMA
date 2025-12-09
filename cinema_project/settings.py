@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-change-this-in-production'
 
-DEBUG = False  # Измените на False для продакшена
+DEBUG = True  # Для разработки True, для продакшена False
 
 ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '*.onrender.com']
 

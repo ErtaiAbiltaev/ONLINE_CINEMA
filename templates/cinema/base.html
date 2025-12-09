@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>{% block title %}ПРИВЕТ АЙНАРА - Смотри фильмы онлайн{% endblock %}</title>
+    <title>{% block title %}WESTLINE - Смотри фильмы онлайн{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,7 +25,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: 900;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-shadow: 0 0 30px rgba(255, 0, 110, 0.3);
         }
         .film-card { 
@@ -33,10 +33,12 @@
             position: relative;
             overflow: hidden;
             border-radius: 12px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
         }
         .film-card:hover { 
             transform: translateY(-12px) scale(1.05);
             box-shadow: 0 25px 50px rgba(139, 92, 246, 0.4);
+            border-color: rgba(139, 92, 246, 0.8);
         }
         .film-card img {
             transition: transform 0.4s ease;
@@ -80,6 +82,15 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        .category-btn {
+            transition: all 0.3s ease;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+        .category-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.8);
+            transform: translateY(-2px);
+        }
         @media (max-width: 768px) {
             .logo-text {
                 font-size: 1.5rem;
@@ -108,14 +119,14 @@
             <div class="flex justify-between items-center">
                 <a href="{% url 'home' %}" class="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
                     <div class="text-2xl sm:text-3xl">🎬</div>
-                    <span class="logo-text hidden sm:inline text-2xl sm:text-3xl">ПРИВЕТ АЙНАРА</span>
-                    <span class="logo-text sm:hidden text-lg">ПА</span>
+                    <span class="logo-text hidden sm:inline text-2xl sm:text-3xl">WESTLINE</span>
+                    <span class="logo-text sm:hidden text-lg">WL</span>
                 </a>
                 
                 <!-- Desktop Search -->
                 <div class="hidden md:flex flex-1 mx-4 lg:mx-8 max-w-md">
                     <form method="get" action="{% url 'search' %}" class="w-full relative">
-                        <input type="text" name="q" placeholder="Поиск..." 
+                        <input type="text" name="q" placeholder="Поиск фильмов..." 
                                class="w-full bg-gray-900/60 border-2 border-purple-500/30 rounded-full px-4 py-2 focus:outline-none focus:border-purple-500 text-white placeholder-gray-500 transition text-sm">
                         <button type="submit" class="absolute right-3 top-2 text-purple-400">
                             <i class="fas fa-search"></i>
@@ -157,7 +168,7 @@
             <!-- Mobile Search -->
             <div class="md:hidden mt-3 flex">
                 <form method="get" action="{% url 'search' %}" class="w-full relative">
-                    <input type="text" name="q" placeholder="Поиск фильмов..." 
+                    <input type="text" name="q" placeholder="Поиск..." 
                            class="w-full bg-gray-900/60 border-2 border-purple-500/30 rounded-full px-4 py-2 focus:outline-none focus:border-purple-500 text-white placeholder-gray-500 transition text-sm">
                     <button type="submit" class="absolute right-3 top-2 text-purple-400">
                         <i class="fas fa-search"></i>
@@ -177,9 +188,6 @@
                     <a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-purple-600/30 rounded-lg transition">
                         <i class="fas fa-user-circle mr-2"></i> Профиль
                     </a>
-                    <a href="{% url 'watch_history' %}" class="block px-4 py-2 hover:bg-purple-600/30 rounded-lg transition">
-                        <i class="fas fa-history mr-2"></i> История
-                    </a>
                     <a href="{% url 'logout' %}" class="block px-4 py-2 bg-red-600/30 hover:bg-red-600/50 rounded-lg transition text-red-300">
                         <i class="fas fa-sign-out-alt mr-2"></i> Выход
                     </a>
@@ -195,6 +203,26 @@
         </div>
     </nav>
 
+    <!-- Categories Menu -->
+    <div class="bg-gray-900/50 border-b border-purple-900/30 sticky top-20 z-40">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 overflow-x-auto">
+            <div class="flex gap-2 flex-nowrap whitespace-nowrap scrollbar-hide">
+                <a href="{% url 'novelties' %}" class="category-btn px-4 py-2 rounded-full bg-purple-600/20 border-purple-500 text-sm font-bold">🎬 Новинки</a>
+                <a href="{% url 'category' 'action' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">🔥 Боевики</a>
+                <a href="{% url 'category' 'horror' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">🎭 Ужасы</a>
+                <a href="{% url 'category' 'comedy' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">😂 Комедии</a>
+                <a href="{% url 'category' 'drama' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">💔 Драма</a>
+                <a href="{% url 'category' 'scifi' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">🚀 Научная фантастика</a>
+                <a href="{% url 'category' 'fantasy' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">✨ Фэнтези</a>
+                <a href="{% url 'category' 'romance' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">💕 Романтика</a>
+                <a href="{% url 'category' 'adventure' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">🗺️ Приключения</a>
+                <a href="{% url 'category' 'thriller' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">😨 Триллеры</a>
+                <a href="{% url 'category' 'crime' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">🔪 Криминал</a>
+                <a href="{% url 'category' 'documentary' %}" class="category-btn px-4 py-2 rounded-full border-purple-400/30 text-sm font-bold">📽️ Документалистика</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="fade-in">
         {% block content %}{% endblock %}
@@ -205,24 +233,24 @@
         <div class="max-w-7xl mx-auto px-3 sm:px-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
                 <div>
-                    <h3 class="text-xl sm:text-2xl font-bold logo-text mb-2 sm:mb-4">ПРИВЕТ АЙНАРА</h3>
-                    <p class="text-sm sm:text-base text-gray-400">Лучшая платформа для просмотра фильмов</p>
+                    <h3 class="text-xl sm:text-2xl font-bold logo-text mb-2 sm:mb-4">WESTLINE</h3>
+                    <p class="text-sm sm:text-base text-gray-400">Смотри фильмы онлайн без ограничений</p>
                 </div>
                 <div>
                     <h4 class="font-bold mb-2 sm:mb-4 text-sm sm:text-base">Меню</h4>
                     <ul class="space-y-1 sm:space-y-2 text-sm text-gray-400">
                         <li><a href="{% url 'home' %}" class="hover:text-purple-400">Главная</a></li>
-                        <li><a href="{% url 'search' %}" class="hover:text-purple-400">Поиск</a></li>
+                        <li><a href="{% url 'novelties' %}" class="hover:text-purple-400">Новинки</a></li>
                         <li><a href="{% url 'favorites' %}" class="hover:text-purple-400">Избранное</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold mb-2 sm:mb-4 text-sm sm:text-base">Контакты</h4>
-                    <p class="text-sm text-gray-400">Powered by TMDB API</p>
+                    <h4 class="font-bold mb-2 sm:mb-4 text-sm sm:text-base">Информация</h4>
+                    <p class="text-sm text-gray-400">Powered by TheMovieDB API</p>
                 </div>
             </div>
             <div class="border-t border-purple-900/30 pt-6 sm:pt-8 text-center text-gray-500 text-xs sm:text-sm">
-                <p>© 2025 ПРИВЕТ АЙНАРА | Создано с ❤️</p>
+                <p>© 2025 WESTLINE | Создано с ❤️</p>
             </div>
         </div>
     </footer>
@@ -237,16 +265,6 @@
         document.querySelectorAll('#mobileMenu a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('mobileMenu').classList.add('hidden');
-            });
-        });
-
-        // Smooth transitions for film cards
-        document.querySelectorAll('.film-card').forEach(card => {
-            card.addEventListener('touchstart', function() {
-                this.style.transform = 'scale(0.95)';
-            });
-            card.addEventListener('touchend', function() {
-                this.style.transform = 'scale(1)';
             });
         });
     </script>

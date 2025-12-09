@@ -14,7 +14,6 @@ TMDB_API_KEY = settings.TMDB_API_KEY
 TMDB_BASE_URL = settings.TMDB_BASE_URL
 
 def get_tmdb_data(endpoint, params=None):
-    """Получить данные из TheMovieDB API"""
     if params is None:
         params = {}
     params['api_key'] = TMDB_API_KEY
@@ -23,20 +22,93 @@ def get_tmdb_data(endpoint, params=None):
     return response.json() if response.status_code == 200 else {}
 
 def home(request):
-    """Главная страница"""
     trending = get_tmdb_data('/trending/movie/week')
     popular = get_tmdb_data('/movie/popular')
     top_rated = get_tmdb_data('/movie/top_rated')
+    upcoming = get_tmdb_data('/movie/upcoming')
     
     context = {
-        'trending': trending.get('results', [])[:10],
-        'popular': popular.get('results', [])[:8],
-        'top_rated': top_rated.get('results', [])[:8],
+        'trending': trending.get('results', [])[:12],
+        'popular': popular.get('results', [])[:12],
+        'top_rated': top_rated.get('results', [])[:12],
+        'upcoming': upcoming.get('results', [])[:12],
     }
     return render(request, 'cinema/home.html', context)
 
+def category_view(request, category):
+    """Получить фильмы по категориям/жанрам"""
+    genre_ids = {
+        'horror': 27,
+        'action': 28,
+        'adventure': 12,
+        'comedy': 35,
+        'crime': 80,
+        'documentary': 99,
+        'drama': 18,
+        'family': 10751,
+        'fantasy': 14,
+        'history': 36,
+        'mystery': 9648,
+        'romance': 10749,
+        'scifi': 878,
+        'thriller': 53,
+        'war': 10752,
+        'western': 37,
+    }
+    
+    genre_names = {
+        'horror': '🎭 Ужасы',
+        'action': '🔥 Боевики',
+        'adventure': '🗺️ Приключения',
+        'comedy': '😂 Комедии',
+        'crime': '🔪 Криминал',
+        'documentary': '📽️ Документалистика',
+        'drama': '💔 Драма',
+        'family': '👨‍👩‍👧‍👦 Семейные',
+        'fantasy': '✨ Фэнтези',
+        'history': '⏰ Исторические',
+        'mystery': '🔍 Мистика',
+        'romance': '💕 Романтика',
+        'scifi': '🚀 Научная фантастика',
+        'thriller': '😨 Триллеры',
+        'war': '⚔️ Военные',
+        'western': '🤠 Вестерны',
+    }
+    
+    page = request.GET.get('page', 1)
+    
+    if category in genre_ids:
+        results = get_tmdb_data('/discover/movie', {
+            'with_genres': genre_ids[category],
+            'page': page,
+            'sort_by': 'popularity.desc'
+        })
+        films = results.get('results', [])
+        genre_name = genre_names.get(category, category)
+    else:
+        films = []
+        genre_name = category
+    
+    return render(request, 'cinema/category.html', {
+        'films': films,
+        'category': category,
+        'genre_name': genre_name,
+        'total_pages': results.get('total_pages', 0) if category in genre_ids else 0
+    })
+
+def novelties(request):
+    """Новинки"""
+    page = request.GET.get('page', 1)
+    results = get_tmdb_data('/movie/upcoming', {'page': page})
+    films = results.get('results', [])
+    return render(request, 'cinema/category.html', {
+        'films': films,
+        'category': 'novelties',
+        'genre_name': '🎬 Новинки',
+        'total_pages': results.get('total_pages', 0)
+    })
+
 def register(request):
-    """Регистрация пользователя"""
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -57,7 +129,6 @@ def register(request):
     return render(request, 'cinema/register.html')
 
 def login_view(request):
-    """Вход пользователя"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -72,13 +143,11 @@ def login_view(request):
     return render(request, 'cinema/login.html')
 
 def logout_view(request):
-    """Выход пользователя"""
     logout(request)
     return redirect('home')
 
 @login_required
 def profile(request):
-    """Профиль пользователя"""
     user_profile = request.user.profile
     favorites = Favorite.objects.filter(user=request.user).select_related('film')
     watch_history = WatchHistory.objects.filter(user=request.user).select_related('film')[:10]
@@ -93,7 +162,6 @@ def profile(request):
     return render(request, 'cinema/profile.html', context)
 
 def search_films(request):
-    """Поиск фильмов"""
     query = request.GET.get('q', '')
     page = request.GET.get('page', 1)
     
@@ -110,7 +178,6 @@ def search_films(request):
     })
 
 def film_detail(request, tmdb_id):
-    """Детальная страница фильма"""
     film_data = get_tmdb_data(f'/movie/{tmdb_id}')
     
     if not film_data.get('id'):
@@ -168,7 +235,6 @@ def film_detail(request, tmdb_id):
 @login_required
 @require_POST
 def toggle_favorite(request, film_id):
-    """Добавить/удалить из избранного"""
     film = get_object_or_404(Film, id=film_id)
     favorite, created = Favorite.objects.get_or_create(user=request.user, film=film)
     if not created:
@@ -178,20 +244,17 @@ def toggle_favorite(request, film_id):
 
 @login_required
 def favorites(request):
-    """Избранные фильмы"""
     favorites = Favorite.objects.filter(user=request.user).select_related('film')
     return render(request, 'cinema/favorites.html', {'favorites': favorites})
 
 @login_required
 def watch_history(request):
-    """История просмотров"""
     history = WatchHistory.objects.filter(user=request.user).select_related('film')
     return render(request, 'cinema/watch_history.html', {'history': history})
 
 @login_required
 @require_POST
 def add_review(request, film_id):
-    """Добавить рецензию"""
     film = get_object_or_404(Film, id=film_id)
     rating = int(request.POST.get('rating', 5))
     comment = request.POST.get('comment', '')
@@ -203,15 +266,3 @@ def add_review(request, film_id):
     )
     
     return redirect('film_detail', tmdb_id=film.tmdb_id)
-
-def genre_films(request, genre_id):
-    """Фильмы по жанру"""
-    page = request.GET.get('page', 1)
-    results = get_tmdb_data('/discover/movie', {'with_genres': genre_id, 'page': page})
-    films = results.get('results', [])
-    
-    return render(request, 'cinema/genre_films.html', {
-        'films': films,
-        'genre_id': genre_id,
-        'total_pages': results.get('total_pages', 0)
-    })
