@@ -1,17 +1,13 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-import dj_database_url
-
-load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
+SECRET_KEY = 'django-insecure-change-this-in-production'
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = False  # Измените на False для продакшена
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '*.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,10 +51,10 @@ TEMPLATES = [
 ]
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -95,9 +91,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://*.ngrok.io",
     "http://*.loca.lt",
     "https://*.loca.lt",
-    "https://*.railway.app",
-    "https://*.render.com",
+    "https://*.onrender.com",
 ]
 
-TMDB_API_KEY = os.getenv('TMDB_API_KEY', '81518c06c757925f80e10ed116d6799c')
+TMDB_API_KEY = '81518c06c757925f80e10ed116d6799c'  # Замените на ваш реальный ключ
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
