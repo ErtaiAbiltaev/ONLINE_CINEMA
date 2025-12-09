@@ -68,3 +68,17 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.film} ({self.rating}/10)"
+
+class Recommendation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
+    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='recommended_by')
+    title = models.CharField(max_length=255, default="Советую посмотреть!")
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} рекомендует {self.film}"

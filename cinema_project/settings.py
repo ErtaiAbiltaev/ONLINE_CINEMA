@@ -96,3 +96,11 @@ CORS_ALLOWED_ORIGINS = [
 
 TMDB_API_KEY = '81518c06c757925f80e10ed116d6799c'  # Замените на ваш реальный ключ
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'westline-cache',
+        'TIMEOUT': 3600,
+    }
+}

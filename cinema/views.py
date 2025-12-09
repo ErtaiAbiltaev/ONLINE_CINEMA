@@ -5,27 +5,40 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q
+from django.core.cache import cache
 import requests
 from django.conf import settings
 from .models import Film, WatchHistory, Favorite, Review, UserProfile
-import json
 
 TMDB_API_KEY = settings.TMDB_API_KEY
 TMDB_BASE_URL = settings.TMDB_BASE_URL
 
-def get_tmdb_data(endpoint, params=None):
+def get_tmdb_data(endpoint, params=None, cache_time=3600):
+    """Получить данные из TheMovieDB API с кешированием"""
     if params is None:
         params = {}
-    params['api_key'] = TMDB_API_KEY
-    params['language'] = 'ru-RU'
-    response = requests.get(f"{TMDB_BASE_URL}{endpoint}", params=params)
-    return response.json() if response.status_code == 200 else {}
+    
+    cache_key = f"tmdb_{endpoint}_{str(params)}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return cached_data
+    
+    try:
+        params['api_key'] = TMDB_API_KEY
+        params['language'] = 'ru-RU'
+        response = requests.get(f"{TMDB_BASE_URL}{endpoint}", params=params, timeout=10)
+        data = response.json() if response.status_code == 200 else {'results': []}
+        cache.set(cache_key, data, cache_time)
+        return data
+    except Exception as e:
+        print(f"⚠️ Ошибка API: {e}")
+        return {'results': []}
 
 def home(request):
-    trending = get_tmdb_data('/trending/movie/week')
-    popular = get_tmdb_data('/movie/popular')
-    top_rated = get_tmdb_data('/movie/top_rated')
-    upcoming = get_tmdb_data('/movie/upcoming')
+    trending = get_tmdb_data('/trending/movie/week', cache_time=7200)
+    popular = get_tmdb_data('/movie/popular', cache_time=7200)
+    top_rated = get_tmdb_data('/movie/top_rated', cache_time=7200)
+    upcoming = get_tmdb_data('/movie/upcoming', cache_time=7200)
     
     context = {
         'trending': trending.get('results', [])[:12],
@@ -36,7 +49,6 @@ def home(request):
     return render(request, 'cinema/home.html', context)
 
 def category_view(request, category):
-    """Получить фильмы по категориям/жанрам"""
     genre_ids = {
         'horror': 27,
         'action': 28,
@@ -76,28 +88,31 @@ def category_view(request, category):
     }
     
     page = request.GET.get('page', 1)
+    sort = request.GET.get('sort', 'rating')  # По умолчанию сортируем по рейтингу
+    results = {}
+    films = []
+    genre_name = category
     
     if category in genre_ids:
         results = get_tmdb_data('/discover/movie', {
             'with_genres': genre_ids[category],
             'page': page,
-            'sort_by': 'popularity.desc'
+            'sort_by': 'vote_average.desc' if sort == 'rating' else 'popularity.desc'
         })
         films = results.get('results', [])
+        # Фильтруем только фильмы с рейтингом выше 6.0
+        films = [f for f in films if f.get('vote_average', 0) >= 6.0]
         genre_name = genre_names.get(category, category)
-    else:
-        films = []
-        genre_name = category
     
     return render(request, 'cinema/category.html', {
         'films': films,
         'category': category,
         'genre_name': genre_name,
-        'total_pages': results.get('total_pages', 0) if category in genre_ids else 0
+        'total_pages': results.get('total_pages', 0),
+        'sort': sort
     })
 
 def novelties(request):
-    """Новинки"""
     page = request.GET.get('page', 1)
     results = get_tmdb_data('/movie/upcoming', {'page': page})
     films = results.get('results', [])
@@ -164,12 +179,12 @@ def profile(request):
 def search_films(request):
     query = request.GET.get('q', '')
     page = request.GET.get('page', 1)
+    results = {}
+    films = []
     
     if query:
         results = get_tmdb_data('/search/movie', {'query': query, 'page': page})
         films = results.get('results', [])
-    else:
-        films = []
     
     return render(request, 'cinema/search.html', {
         'films': films,
@@ -189,7 +204,7 @@ def film_detail(request, tmdb_id):
     
     trailer_url = None
     for video in videos.get('results', []):
-        if video['type'] == 'Trailer' and video['site'] == 'YouTube':
+        if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
             trailer_url = f"https://www.youtube.com/embed/{video['key']}"
             break
     
@@ -266,3 +281,56 @@ def add_review(request, film_id):
     )
     
     return redirect('film_detail', tmdb_id=film.tmdb_id)
+
+@login_required
+def clear_history(request):
+    """Очистить историю просмотров"""
+    WatchHistory.objects.filter(user=request.user).delete()
+    return redirect('watch_history')
+
+def about(request):
+    """Страница о сервисе"""
+    context = {
+        'title': 'О WESTLINE',
+        'description': 'Платформа для потокового просмотра фильмов',
+        'features': [
+            'Потоковый просмотр фильмов',
+            'Расширенный каталог фильмов',
+            'История просмотров',
+            'Система рецензий',
+            'Избранные фильмы',
+            'Рекомендации на основе рейтинга',
+        ]
+    }
+    return render(request, 'cinema/about.html', context)
+
+@login_required
+def add_recommendation(request, film_id):
+    """Добавить рекомендацию фильма"""
+    film = get_object_or_404(Film, id=film_id)
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', 'Советую посмотреть!')
+        message = request.POST.get('message', '')
+        
+        if message.strip():
+            from .models import Recommendation
+            Recommendation.objects.create(
+                user=request.user,
+                film=film,
+                title=title,
+                message=message
+            )
+        
+        return redirect('film_detail', tmdb_id=film.tmdb_id)
+    
+    return redirect('film_detail', tmdb_id=film.tmdb_id)
+
+@login_required
+def like_recommendation(request, recommendation_id):
+    """Лайк рекомендации"""
+    from .models import Recommendation
+    recommendation = get_object_or_404(Recommendation, id=recommendation_id)
+    recommendation.likes += 1
+    recommendation.save()
+    return redirect('film_detail', tmdb_id=recommendation.film.tmdb_id)

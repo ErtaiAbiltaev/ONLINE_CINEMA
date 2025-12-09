@@ -1,0 +1,44 @@
+{% extends 'cinema/base.html' %}
+
+{% block title %}История просмотров - WESTLINE{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-3 sm:px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-black section-title">📺 История просмотров</h1>
+        {% if history %}
+        <a href="{% url 'clear_history' %}" class="bg-red-600/50 hover:bg-red-600/70 text-red-200 px-4 py-2 rounded-lg text-sm font-bold transition">
+            Очистить историю
+        </a>
+        {% endif %}
+    </div>
+
+    {% if history %}
+    <div class="space-y-4">
+        {% for item in history %}
+        <div class="bg-gray-900/50 border border-purple-500/30 rounded-lg p-4 sm:p-6 hover:border-purple-500 transition">
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg text-cyan-400 mb-2">{{ item.film.title }}</h3>
+                    <p class="text-gray-400 text-sm mb-2">⭐ {{ item.film.rating|floatformat:1 }}</p>
+                    <p class="text-gray-500 text-xs">Просмотрено: {{ item.watched_at|date:'d.m.Y в H:i' }}</p>
+                </div>
+                <a href="{% url 'film_detail' item.film.tmdb_id %}" class="btn-gradient text-white px-6 py-2 rounded-lg font-bold text-sm whitespace-nowrap">
+                    Продолжить смотреть
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <i class="fas fa-history text-6xl text-gray-600 mb-4"></i>
+        <p class="text-2xl text-gray-400">История пуста</p>
+        <p class="text-gray-500 mt-2">Начните смотреть фильмы, чтобы заполнить историю</p>
+        <a href="{% url 'home' %}" class="btn-gradient text-white px-6 py-3 rounded-lg font-bold mt-6 inline-block">
+            Смотреть фильмы
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

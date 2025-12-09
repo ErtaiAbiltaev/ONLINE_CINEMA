@@ -11,8 +11,12 @@ urlpatterns = [
     path('film/<int:tmdb_id>/', views.film_detail, name='film_detail'),
     path('favorites/', views.favorites, name='favorites'),
     path('history/', views.watch_history, name='watch_history'),
+    path('history/clear/', views.clear_history, name='clear_history'),
     path('toggle-favorite/<int:film_id>/', views.toggle_favorite, name='toggle_favorite'),
     path('review/<int:film_id>/', views.add_review, name='add_review'),
+    path('recommend/<int:film_id>/', views.add_recommendation, name='add_recommendation'),
+    path('like-recommendation/<int:recommendation_id>/', views.like_recommendation, name='like_recommendation'),
     path('category/<str:category>/', views.category_view, name='category'),
     path('novelties/', views.novelties, name='novelties'),
+    path('about/', views.about, name='about'),
 ]
